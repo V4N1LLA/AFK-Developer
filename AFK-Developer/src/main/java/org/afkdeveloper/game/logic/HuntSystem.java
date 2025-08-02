@@ -1,6 +1,9 @@
 package org.afkdeveloper.game.logic;
 
+import org.afkdeveloper.game.model.Equipment;
 import org.afkdeveloper.game.model.Player;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public class HuntSystem {
     private final Player player;
@@ -30,21 +33,14 @@ public class HuntSystem {
     }
 
     private long monsterMaxHp(){
-        // 플레이어 레벨 기반 던전 자동 상향
         int lv = player.getLevel();
         long hp = 30 + (long)(lv * 12L);
         int tier = Math.max(0, (lv-1)/10);
         return Math.round(hp * (1.0 + tier*0.6));
     }
 
-    private long expReward(){
-        int lv = player.getLevel();
-        return 4 + lv; // 소폭 증가
-    }
-    private long goldReward(){
-        int lv = player.getLevel();
-        return 6 + lv * 2L;
-    }
+    private long expReward(){ return 4 + player.getLevel(); }
+    private long goldReward(){ return 6 + player.getLevel() * 2L; }
 
     private void runLoop(){
         long hp = monsterMaxHp();
@@ -52,9 +48,8 @@ public class HuntSystem {
 
         while(hunting){
             try {
-                // 공격 주기 = 1000ms / ASPD
-                double aspd = player.getStat().getAspd();
-                long delay = Math.max(100, (long)(1000 / Math.max(0.1, aspd)));
+                double aspd = player.totalAspd();
+                long delay = Math.max(80, (long)(1000 / Math.max(0.1, aspd)));
                 Thread.sleep(delay);
 
                 var hit = battle.calcHit(player, cur);
@@ -66,10 +61,24 @@ public class HuntSystem {
                 render(cur, hp, hit.crit() ? "(CRIT!)" : "");
 
                 if(cur <= 0){
-                    // 처치 보상
-                    player.gainExp(expReward());
-                    player.gainGold(goldReward());
-                    // 다음 몬스터 리스폰
+                    // 처치 보상 (패시브 배수 적용)
+                    double expMul  = player.getSkills().expGainMultiplier();
+                    double curMul  = player.getSkills().currencyGainMultiplier();
+                    long expGain   = Math.max(1, Math.round(expReward()  * expMul));
+                    long goldGain  = Math.max(1, Math.round(goldReward() * curMul));
+
+                    player.gainExp(expGain);
+                    player.gainGold(goldGain);
+
+                    // 드랍률 = 기본 2% + 패시브
+                    double dropChance = 0.02 + player.getSkills().dropRateBonusPct()/100.0;
+                    if(ThreadLocalRandom.current().nextDouble() < dropChance){
+                        var drop = new Equipment("Rusty Dagger", Equipment.Type.WEAPON, 3, 0);
+                        player.getInventory().add(drop);
+                        System.out.print("\n🎁 드랍 획득: " + drop + "\n");
+                    }
+
+                    // 다음 몬스터
                     hp = monsterMaxHp();
                     cur = hp;
                 }
@@ -85,8 +94,7 @@ public class HuntSystem {
         for(int i=0;i<width;i++) bar.append(i<fill ? '■' : '□');
         bar.append("] ").append(String.format("%.3f", ratio*100)).append("%");
 
-        System.out.print("\r"); // 같은 줄 갱신
-        System.out.print("몬스터 HP " + bar + " " + tag + "    ");
-        if(cur == max) System.out.print("\n"); // 새 몬스터 스폰 시 줄개행
+        System.out.print("\r몬스터 HP " + bar + " " + tag + "    ");
+        if(cur == max) System.out.print("\n");
     }
 }

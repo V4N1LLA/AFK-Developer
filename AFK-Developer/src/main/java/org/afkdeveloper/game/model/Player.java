@@ -1,12 +1,17 @@
 package org.afkdeveloper.game.model;
 
+import org.afkdeveloper.game.logic.SkillManager;
+
 public class Player {
     private final String name;
     private int level;
     private long exp;
     private long gold;
     private long gem;
+
     private final Stat stat;
+    private final Inventory inv = new Inventory();
+    private final SkillManager skills = new SkillManager();
 
     public Player(String name) {
         this.name = name;
@@ -15,6 +20,11 @@ public class Player {
         this.gold = 0;
         this.gem  = 0;
         this.stat = new Stat();
+
+        // 스타터 장비
+        inv.add(new Equipment("Wooden Sword", Equipment.Type.WEAPON, 5, 0));
+        inv.add(new Equipment("Cloth Armor",  Equipment.Type.ARMOR,  0, 3));
+        inv.equip(0); // 기본 무기 장착
     }
 
     public String getName(){ return name; }
@@ -23,12 +33,13 @@ public class Player {
     public long getGold(){ return gold; }
     public long getGem(){ return gem; }
     public Stat getStat(){ return stat; }
+    public Inventory getInventory(){ return inv; }
+    public SkillManager getSkills(){ return skills; }
 
-    // 10레벨 단위로 요구치 상승(완만→점진)
     public long expToNext() {
-        int tier = Math.max(0, (level-1)/10);        // 0,1,2,...
-        long base = 30L + (level-1) * 8L;             // 선형 기반
-        return Math.round(base * (1.0 + tier * 0.5)); // 티어마다 +50%
+        int tier = Math.max(0, (level-1)/10);
+        long base = 30L + (level-1) * 8L;
+        return Math.round(base * (1.0 + tier * 0.5));
     }
 
     public void gainGold(long g){ gold += g; }
@@ -39,9 +50,25 @@ public class Player {
         while (exp >= expToNext()) {
             exp -= expToNext();
             level++;
-            stat.gainStatPoints(2); // 레벨업마다 스탯 2포인트
-            System.out.println("🎉 레벨업! Lv." + level + " (스탯 포인트 +2)");
+            stat.gainStatPoints(2);
+            skills.addSkillPoints(1); // 레벨업마다 스킬포인트 +1
+            System.out.println("🎉 레벨업! Lv." + level + " (스탯 +2, 스킬포인트 +1)");
         }
+    }
+
+    public int totalAtk(){
+        int base = Math.max(1, stat.getStr());
+        Equipment w = inv.equipped(Equipment.Type.WEAPON);
+        return base + (w!=null ? w.getAtk() : 0);
+    }
+    public int totalDef(){
+        int base = Math.max(0, stat.getAcc()/5);
+        Equipment a = inv.equipped(Equipment.Type.ARMOR);
+        return base + (a!=null ? a.getDef() : 0);
+    }
+
+    public double totalAspd(){
+        return Math.max(0.1, stat.getAspd() + skills.attackSpeedFlat());
     }
 
     public String bar(long cur, long max, int width){
@@ -60,9 +87,12 @@ public class Player {
             🧑‍💻 전사 %s | Lv.%d
             📈 EXP: %s
             💰 GOLD: %,d | 💎 GEM: %,d
+            ⚔️ ATK:%d | 🛡️ DEF:%d
             📊 %s
+            %s
             """,
-            name, level, bar(exp, expToNext(), 20), gold, gem, stat.toString()
+            name, level, bar(exp, expToNext(), 20), gold, gem,
+            totalAtk(), totalDef(), stat.toString(), inv.equippedSummary()
         );
     }
 }

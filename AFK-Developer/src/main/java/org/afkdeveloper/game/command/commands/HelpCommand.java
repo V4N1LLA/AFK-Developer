@@ -13,6 +13,4 @@ public class HelpCommand implements Command {
         map.forEach((k,v)-> System.out.println("  " + k + "  " + v.help()));
         System.out.println("  /exit  게임 종료");
     }
-
-    @Override public String help(){ return "/help : 명령어 안내"; }
 }

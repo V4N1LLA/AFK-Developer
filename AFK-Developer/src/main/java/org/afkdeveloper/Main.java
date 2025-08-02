@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        // 콘솔 출력 UTF-8 강제
         System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
 
         Player player = new Player("Warrior");

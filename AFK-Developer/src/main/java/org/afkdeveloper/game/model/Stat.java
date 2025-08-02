@@ -15,7 +15,7 @@ public class Stat {
 
     public void addStr(int n){ if(statPoints>=n){ str+=n; statPoints-=n; } }
     public void addAcc(int n){ if(statPoints>=n){ acc+=n; statPoints-=n; } }
-    public void addAspd(int n){ if(statPoints>=n){ aspd += 0.05 * n; statPoints-=n; } } // 1포인트당 +0.05 hit/sec
+    public void addAspd(int n){ if(statPoints>=n){ aspd += 0.05 * n; statPoints-=n; } }
 
     public int getStr(){ return str; }
     public int getAcc(){ return acc; }

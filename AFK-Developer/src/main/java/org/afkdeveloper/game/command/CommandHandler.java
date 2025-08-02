@@ -1,6 +1,8 @@
 package org.afkdeveloper.game.command;
 
 import org.afkdeveloper.game.command.commands.*;
+import org.afkdeveloper.game.logic.BossSystem;
+import org.afkdeveloper.game.logic.ForgeSystem;
 import org.afkdeveloper.game.logic.HuntSystem;
 import org.afkdeveloper.game.model.Player;
 
@@ -12,11 +14,20 @@ public class CommandHandler {
 
     public CommandHandler(Player player) {
         HuntSystem hunt = new HuntSystem(player);
+        ForgeSystem forge = new ForgeSystem(player);
+        BossSystem boss = new BossSystem(player);
+
         map.put("/status", new StatusCommand(player));
-        map.put("/hunt", new HuntCommand(hunt));
-        map.put("/help", new HelpCommand(map));
-        map.put("/exit", new ExitCommand()); // 편의
-        // 추후: /stat, /boss, /forge, /equip, /save ...
+        map.put("/hunt",   new HuntCommand(hunt));
+        map.put("/stat",   new StatCommand(player));
+        map.put("/equip",  new EquipCommand(player));
+        map.put("/forge",  new ForgeCommand(forge));
+        map.put("/boss",   new BossCommand(boss));
+        map.put("/skill",  new SkillCommand(player));
+        map.put("/save",   new SaveCommand(player));
+        map.put("/load",   new LoadCommand(player));
+        map.put("/help",   new HelpCommand(map));
+        map.put("/exit",   new ExitCommand());
     }
 
     public void handle(String input){
