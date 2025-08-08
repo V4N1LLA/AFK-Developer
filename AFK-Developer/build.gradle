@@ -20,6 +20,11 @@ repositories {
 
 application {
     mainClass = 'org.afkdeveloper.Main'
+    applicationDefaultJvmArgs = ['-Dfile.encoding=UTF-8']
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 dependencies {
@@ -35,4 +40,23 @@ tasks.named('test') {
 tasks.withType(JavaExec) {
     // JVM 실행 시 콘솔 인코딩 설정
     systemProperty 'file.encoding', 'UTF-8'
+}
+
+tasks.named('startScripts') {
+    doLast {
+        // Windows 배치 스크립트에 코드페이지 및 JVM 인자 주입
+        def win = file("$buildDir/scripts/${application.applicationName}.bat")
+        if (win.exists()) {
+            // 1) 배치 시작 시 코드페이지를 UTF-8로 고정
+            win.text = win.text.replaceFirst('@echo off', '@echo off\r\nchcp 65001 >NUL')
+
+            // 2) DEFAULT_JVM_OPTS에 UTF-8 인자 보강 (이미 있으면 유지)
+            if (!win.text.contains('-Dsun.stdout.encoding=UTF-8')) {
+                win.text = win.text.replace(
+                    'set DEFAULT_JVM_OPTS=',
+                    'set DEFAULT_JVM_OPTS="-Dfile.encoding=UTF-8" "-Dsun.stdout.encoding=UTF-8" "-Dsun.stderr.encoding=UTF-8" '
+                )
+            }
+        }
+    }
 }

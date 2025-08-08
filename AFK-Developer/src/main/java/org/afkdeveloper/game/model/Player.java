@@ -21,9 +21,9 @@ public class Player {
         this.gem  = 0;
         this.stat = new Stat();
 
-        // 스타터 장비
-        inv.add(new Equipment("Wooden Sword", Equipment.Type.WEAPON, 5, 0));
-        inv.add(new Equipment("Cloth Armor",  Equipment.Type.ARMOR,  0, 3));
+        // 스타터 장비(살짝 상향)
+        inv.add(new Equipment("Wooden Sword", Equipment.Type.WEAPON, Rarity.UNCOMMON, 7, 0));
+        inv.add(new Equipment("Cloth Armor",  Equipment.Type.ARMOR,  Rarity.COMMON,   0, 3));
         inv.equip(0); // 기본 무기 장착
     }
 

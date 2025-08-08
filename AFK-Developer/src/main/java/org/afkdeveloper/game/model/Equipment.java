@@ -5,13 +5,15 @@ public class Equipment {
 
     private final String name;
     private final Type type;
+    private final Rarity rarity;
     private int atk;
     private int def;
     private int enhance; // +n
 
-    public Equipment(String name, Type type, int atk, int def) {
+    public Equipment(String name, Type type, Rarity rarity, int atk, int def) {
         this.name = name;
         this.type = type;
+        this.rarity = rarity;
         this.atk = atk;
         this.def = def;
         this.enhance = 0;
@@ -24,12 +26,13 @@ public class Equipment {
     }
 
     public Type getType(){ return type; }
+    public Rarity getRarity(){ return rarity; }
     public int getAtk(){ return atk; }
     public int getDef(){ return def; }
     public int getEnhance(){ return enhance; }
     public String getName(){ return name; }
 
     @Override public String toString(){
-        return "%s +%d (ATK:%d DEF:%d)".formatted(name, enhance, atk, def);
+        return "[%s] %s +%d (ATK:%d DEF:%d)".formatted(rarity.label(), name, enhance, atk, def);
     }
 }
