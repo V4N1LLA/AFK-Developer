@@ -1,0 +1,1 @@
+name=Warrior,level=24,gold=3844,gem=0
